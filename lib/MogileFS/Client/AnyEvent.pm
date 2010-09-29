@@ -25,21 +25,85 @@ sub new_file { confess("new_file is unsupported in " . __PACKAGE__) }
 sub edit_file { confess("edit_file is unsupported in " . __PACKAGE__) }
 sub read_file { confess("read_file is unsupported in " . __PACKAGE__) }
 
-sub read_to_file {
+sub get_paths {
+    my MogileFS::Client $self = shift;
+    my ($key, $opts) = @_;
+
+    # handle parameters, if any
+    my ($noverify, $zone);
+    unless (ref $opts) {
+        $opts = { noverify => $opts };
+    }
+    my %extra_args;
+
+    $noverify = 1 if $opts->{noverify};
+    $zone = $opts->{zone};
+    my $cb = $opts->{cb};
+    my $my_cb;
+    if ($cb) {
+        $my_cb = sub {
+            my ($cv, $res) = @_;
+            my @paths = map { $res->{"path$_"} } (1..$res->{paths});
+
+            $self->run_hook('get_paths_end', $self, $key, $opts);
+            $cb->($cv, @paths);
+        }
+    }
+
+    if (my $pathcount = delete $opts->{pathcount}) {
+        $extra_args{pathcount} = $pathcount;
+    }
+
+    $self->run_hook('get_paths_start', $self, $key, $opts);
+
+    my $res = $self->{backend}->do_request
+        ("get_paths", {
+            domain => $self->{domain},
+            key    => $key,
+            noverify => $noverify ? 1 : 0,
+            zone   => $zone,
+	    %extra_args,
+        }, $my_cb) or return ();
+
+    if ($my_cb) {
+        return $res;
+    }
+
+    my @paths = map { $res->{"path$_"} } (1..$res->{paths});
+
+    $self->run_hook('get_paths_end', $self, $key, $opts);
+
+    return @paths;
+}
+
+
+sub read_to_file_async {
     my $self = shift;
     my $key = shift;
     my $fn = shift;
 
-    my @paths = $self->get_paths($key);
+    $self->get_paths($key, { cb => sub {
+        my ($cv, @paths) = @_;
+        unless (@paths) {
+            $cv->throw("No paths for $key");
+            return;
+        }
 
-    die("No paths for $key") unless @paths;
+        my @possible_paths;
+        push(@possible_paths, @paths) for (1..2);
 
-    for (1..2) {
-        foreach my $path (@paths) {
+
+        my $try; $try = sub {
+            my $path = shift(@possible_paths);
+
+            unless ($path) {
+                $cv->throw("Could not read $key from mogile");
+                return;
+            }
+
             my ($bytes, $write) = (0, undef);
             open $write, '>', $fn or confess("Could not open $fn to write");
 
-            my $cv = AnyEvent->condvar;
             my $h;
             my $guard = http_request
                 GET => $path,
@@ -56,24 +120,24 @@ sub read_to_file {
                     1;
                 },
                 sub { # On complete!
-                    my (undef, $headers) = @_;
+                    my ($err, $headers) = @_;
+                    close $write;
+                    $err = 1 if !defined($err); # '' on ok, undef on fail
+                    if ($err) {
+                        warn("HTTP error getting mogile $key: " . $headers->{Reason} . "\n");
+                        unlink $fn;
+                        $try->();
+                        return;
+                    }
                     $h = $headers;
                     close($write);
                     undef $write;
-                    $cv->send;
+                    $cv->send($bytes);
                     1;
                 };
-            $cv->recv;
-            return $bytes if ($bytes && !$write);
-            # Error..
-            $h->{Code} = 590;
-            $h->{Reason} = "Unknown error";
-            warn("HTTP error getting mogile $key: " . $h->{Reason} . "\n");
-            close $write;
-            unlink $fn;
-        }
-    }
-    confess("Could not read $key from mogile");
+        };
+        $try->();
+    }});
 }
 
 sub store_file {
@@ -222,6 +286,7 @@ sub store_file {
 }
 
 sub store_content {
+    die("BORK");
     my MogileFS::Client $self = shift;
     return undef if $self->{readonly};
 
@@ -240,6 +305,7 @@ sub store_content {
 }
 
 sub get_file_data {
+    die("BORK");
     # given a key, load some paths and get data
     my MogileFS::Client $self = $_[0];
     my ($key, $timeout) = ($_[1], $_[2]);
