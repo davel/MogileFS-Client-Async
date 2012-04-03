@@ -4,6 +4,7 @@ use Test::More;
 use Test::Exception;
 use MogileFS::Client::CallbackFile;
 use Digest::SHA1;
+use Digest::MD5;
 use File::Temp qw/ tempfile /;
 use Data::Dumper;
 
@@ -61,6 +62,19 @@ ok $mogc, 'Have client';
     open(my $read_fh, "<", $0) or die "failed to open $0: $!";
     isa_ok($read_fh, 'GLOB');
 
+    no strict 'refs';
+    my $old_cc = \&MogileFS::Backend::do_request;
+    local *MogileFS::Backend::do_request = sub {
+        if ($_[1] eq 'create_close') {
+            my $p = $_[2];
+            ok(!exists($p->{checksum}));
+            ok(!exists($p->{checksumverify}));
+
+        }
+        return $old_cc->(@_);
+    };
+    use strict;
+
     my $exp_len = -s $read_fh;
     my $key;
     my $callback = $mogc->store_file_from_fh(sub {
@@ -84,15 +98,24 @@ ok $mogc, 'Have client';
 
 {
     open(my $read_fh, "<", $0) or die "failed to open $0: $!";
+
+    my $md5 = Digest::MD5->new->addfile($read_fh)->hexdigest();
+    seek($read_fh, 0, 0);
+
     isa_ok($read_fh, 'GLOB');
 
     no strict 'refs';
     my $old_cc = \&MogileFS::Backend::do_request;
 
     my $fail = 3;
-    *MogileFS::Backend::do_request = sub {
+    local *MogileFS::Backend::do_request = sub {
         if ($_[1] eq 'create_close') {
             die if $fail--;
+
+            my $p = $_[2];
+            is($p->{checksum}, "MD5:$md5");
+            is($p->{checksumverify}, 1);
+
         }
         return $old_cc->(@_);
     };
@@ -113,7 +136,7 @@ ok $mogc, 'Have client';
     }, 'rip', $read_fh, $exp_len, {});
 
     isa_ok($callback, 'CODE');
-    $callback->($exp_len, 1);
+    $callback->($exp_len, 1, "MD5:$md5");
 
     diag "key finally is $key\n";
     is($keys_requested, 2);

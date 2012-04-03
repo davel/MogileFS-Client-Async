@@ -1,3 +1,5 @@
+  - Pass through a calculated checksum.
+
 0.020
   - Correctly recover should create_close fail.
 
