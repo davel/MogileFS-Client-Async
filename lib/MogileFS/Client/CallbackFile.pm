@@ -272,6 +272,12 @@ sub store_file_from_fh {
                         return $eventual_length;
                     }
                     else {
+                        # create_close may explode due to a back checksum,
+                        # or a network error sending the acknowledgement of
+                        # a successfuly upload.  To handle this. if
+                        # create_close fails we always retry with a new
+                        # create_open to get a new FID.
+                        @dests = ();
                         $fail_write_attempt->("create_close failed");
                     }
                 }

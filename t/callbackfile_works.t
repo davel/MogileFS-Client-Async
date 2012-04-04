@@ -139,7 +139,7 @@ ok $mogc, 'Have client';
     $callback->($exp_len, 1, "MD5:$md5");
 
     diag "key finally is $key\n";
-    is($keys_requested, 2);
+    is($keys_requested, 4);
 
     lives_ok {
         my ($fh, $fn) = tempfile;
