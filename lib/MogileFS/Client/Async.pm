@@ -15,7 +15,7 @@ use IO::AIO qw/ fadvise /;
 
 use constant TCP_CORK => ($^O eq "linux" ? 3 : 0); # XXX
 
-our $VERSION = '0.021';
+our $VERSION = '0.022';
 
 =head1 NAME
 
