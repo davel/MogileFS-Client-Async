@@ -261,7 +261,7 @@ sub store_file_from_fh {
                             });
                     }
                     catch {
-                        warn "create_close exploded: $!";
+                        warn "create_close exploded: $_";
                     };
 
                     # TODO we used to have a file check to query the size of the
