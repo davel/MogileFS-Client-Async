@@ -1,3 +1,6 @@
+0.023
+  - Don't lose create_close error messages.
+
 0.022
   - Pass through a calculated checksum.
 
