@@ -20,6 +20,11 @@ requires 'LWP::Simple';
 requires 'IO::AIO' => 3.25;
 
 test_requires 'Test::More' => 0.88;
+test_requires 'Test::Exception' => 0.31;
+test_requires 'Data::Dumper';
+test_requires 'Digest::SHA1';
+test_requires 'Digest::MD5';
+test_requires 'File::Temp';
 
 repository 'git://github.com/davel/MogileFS-Client-Async.git';
 
