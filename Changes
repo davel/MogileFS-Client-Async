@@ -1,3 +1,6 @@
+0.025
+  - Retag correctly.
+
 0.024
   - Fix error path when the remote host gives you a non-200 response.
 
