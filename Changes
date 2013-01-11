@@ -1,3 +1,4 @@
+0.026
   - Code clean ups.
   - Handle uploading large files on 32 bit machines.
   - Handle uploading large files on 64 bit machines.
