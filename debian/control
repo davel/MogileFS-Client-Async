@@ -9,7 +9,8 @@ Build-Depends-Indep: perl (>= 5.8.6), libmogilefs-client-perl,
   libfile-slurp-perl,
   libpackage-stash-perl,
   libpackage-deprecationmanager-perl,
-  liblinux-pipemagic-perl
+  liblinux-pipemagic-perl,
+  libmodule-install-perl
 Maintainer: Tomas Doran <t0m@state51.co.uk>
 Standards-Version: 3.8.3
 Homepage: http://search.cpan.org/dist/MogileFS-Client-Async/
