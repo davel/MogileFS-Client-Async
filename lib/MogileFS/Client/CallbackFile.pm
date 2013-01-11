@@ -197,18 +197,27 @@ sub store_file_from_fh {
             # Write as much data as we have
             if ($socket) {
                 my $bytes_to_write = $available_to_read - $last_written_point;
+                my $block_size = $bytes_to_write;
 
-                if ($bytes_to_write > 0) {
-                    my $c = syssendfile($socket, $read_fh, $bytes_to_write);
-                    if ($c == $bytes_to_write) {
+                SENDFILE: while ($bytes_to_write > 0) {
+                    my $c = syssendfile($socket, $read_fh, $block_size);
+                    if ($c > 0) {
                         $last_written_point += $c;
+                        $bytes_to_write     -= $c;
+                    }
+                    elsif ($c == -1 && $block_size > 1024*1024) {
+                        # 32 bit kernels won't even allow you to send more than 2Gb, it seems.
+                        # Retry with a smaller block size.
+                        $block_size = 1024*1024;
                     }
                     else {
                         $fail_write_attempt->($_);
                         warn "syssendfile failed, only $c out of $bytes_to_write written: $!";
+                        last SENDFILE;
                     }
                 }
-                elsif ($bytes_to_write < 0) {
+
+                if ($bytes_to_write < 0) {
                     die "unpossible!";
                 }
             }
