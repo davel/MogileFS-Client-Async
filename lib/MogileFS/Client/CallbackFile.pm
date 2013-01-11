@@ -135,6 +135,7 @@ sub store_file_from_fh {
 
     # The pointing to the arrayref we're currently writing to.
     my $current_dest;
+    my $create_close_timed_out;
 
     return sub {
         my ($available_to_read, $eof, $checksum) = @_;
@@ -253,20 +254,36 @@ sub store_file_from_fh {
 
                     $opts->{on_http_done}->() if $opts->{http_done};
 
-                    try {
-                        # XXX - What's the timeout here.
-                        my $probe_length = (head($current_dest->{path}))[1];
-                        die "probe failed: $probe_length vs $eventual_length" if $probe_length != $eventual_length;
+                    if (!$checksum) {
+                        try {
+                            # XXX - What's the timeout here.
+                            my $probe_length = (head($current_dest->{path}))[1];
+                            die "probe failed: $probe_length vs $eventual_length" if $probe_length != $eventual_length;
+                        }
+                        catch {
+                            $fail_write_attempt->("HEAD check on newly written file failed: $_");
+                        };
                     }
-                    catch {
-                        $fail_write_attempt->("HEAD check on newly written file failed: $_");
-                    };
+                    elsif ($checksum && $create_close_timed_out) {
+                        try {
+                            my $md5 = Digest::MD5->new();
+                            my $req = HTTP::Request->new(GET => $current_dest->{path});
+                            LWP::UserAgent->new->request($req, sub { $md5->add($_[0]) });
+
+                            my $hex_checked = $md5->hexdigest();
+                            die "Got $hex_checked, expected $checksum" if "MD5:$hex_checked" ne $checksum;
+                        }
+                        catch {
+                            $fail_write_attempt->("Cross network checksum failed: $_");
+                        };
+                    }
 
                     if (defined $last_error) {
                         next;
                     }
 
                     my $rv;
+                    my $ts_sent_create_close = [gettimeofday];
                     try {
                         $rv = $self->{backend}->do_request
                             ("create_close", {
@@ -276,7 +293,7 @@ sub store_file_from_fh {
                                 size   => $eventual_length,
                                 key    => $key,
                                 path   => $current_dest->{path},
-                                $checksum ? (
+                                ($checksum && !$create_close_timed_out) ? (
                                     checksum => $checksum,
                                     checksumverify => 1,
                                 ) : (),
@@ -292,6 +309,11 @@ sub store_file_from_fh {
                     if ($rv) {
                         $self->run_hook('store_file_end', $self, $key, $class, $opts);
                         return $eventual_length;
+                    }
+                    elsif ($checksum && tv_interval($ts_sent_create_close) >= $self->{backend}->{timeout}) {
+                        @dests = ();
+                        $fail_write_attempt->("create_close failed, possibly timed out checksumming");
+                        $create_close_timed_out = 1;
                     }
                     else {
                         # create_close may explode due to a back checksum,
