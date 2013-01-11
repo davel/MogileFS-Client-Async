@@ -100,6 +100,7 @@ sub store_file_from_fh {
             }
             catch {
                 warn "Mogile backend failed: $_";
+                $self->{backend}->force_disconnect() if $self->{backend}->can('force_disconnect');
             };
 
             unless ($res) {
@@ -305,6 +306,7 @@ sub store_file_from_fh {
                     }
                     catch {
                         warn "create_close exploded: $_";
+                        $self->{backend}->force_disconnect() if $self->{backend}->can('force_disconnect');
                     };
 
                     # TODO we used to have a file check to query the size of the
