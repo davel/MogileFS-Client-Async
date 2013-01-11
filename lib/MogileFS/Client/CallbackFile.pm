@@ -169,7 +169,6 @@ sub store_file_from_fh {
                 sysseek($read_fh, 0, 0) or die "seek failed: $!";
                 try {
                     $last_written_point = 0;
-                    $last_written_point = 0;
                     $current_dest = $get_new_dest->();
 
                     $opts->{on_new_attempt}->($current_dest) if $opts->{on_new_attempt};
