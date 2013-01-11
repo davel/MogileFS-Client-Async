@@ -254,6 +254,8 @@ sub store_file_from_fh {
 
                     $opts->{on_http_done}->() if $opts->{http_done};
 
+                    my @cs;
+
                     if (!$checksum) {
                         try {
                             # XXX - What's the timeout here.
@@ -263,6 +265,7 @@ sub store_file_from_fh {
                         catch {
                             $fail_write_attempt->("HEAD check on newly written file failed: $_");
                         };
+                        # No checksum to supply, but we have at least checked the length.
                     }
                     elsif ($checksum && $create_close_timed_out) {
                         try {
@@ -276,6 +279,10 @@ sub store_file_from_fh {
                         catch {
                             $fail_write_attempt->("Cross network checksum failed: $_");
                         };
+                        @cs = ( checksum => $checksum, checksumverify => 0 );
+                    }
+                    else {
+                        @cs = ( checksum => $checksum, checksumverify => 1 );
                     }
 
                     if (defined $last_error) {
@@ -293,10 +300,7 @@ sub store_file_from_fh {
                                 size   => $eventual_length,
                                 key    => $key,
                                 path   => $current_dest->{path},
-                                ($checksum && !$create_close_timed_out) ? (
-                                    checksum => $checksum,
-                                    checksumverify => 1,
-                                ) : (),
+                                @cs,
                             });
                     }
                     catch {
