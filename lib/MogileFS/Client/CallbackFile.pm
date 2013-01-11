@@ -261,9 +261,11 @@ sub store_file_from_fh {
                     }
                     catch {
                         $fail_write_attempt->("HEAD check on newly written file failed: $_");
-                        next;
                     };
 
+                    if (defined $last_error) {
+                        next;
+                    }
 
                     my $rv;
                     try {
