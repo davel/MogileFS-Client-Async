@@ -219,7 +219,19 @@ sub store_file_from_fh {
 
                 $self->run_hook('new_file_end', $self, $key, $class, $opts);
 
-                my $buf = slurp($socket);
+                my $buf;
+                try {
+                    $buf = slurp($socket);
+                }
+                catch {
+                    warn $_;
+                };
+
+                if (!defined($buf)) {
+                    $fail_write_attempt->("slurp failed");
+                    next;
+                }
+
                 setsockopt($socket, IPPROTO_TCP, TCP_CORK, 0) or warn "could not unset TCP_CORK" if TCP_CORK;
                 unless(close($socket)) {
                     $fail_write_attempt->($!);
