@@ -2,7 +2,7 @@ package MogileFS::Client::CallbackFile;
 use strict;
 use warnings;
 use URI;
-use Carp qw/confess/;
+use Carp;
 use IO::Socket::INET;
 use File::Slurp qw/ slurp /;
 use Try::Tiny;
