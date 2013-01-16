@@ -1,3 +1,6 @@
+0.027
+  - Add more documentation.
+  - Handle HTTP failures better.
   - Don't repeetedly report checksum timeouts.
 
 0.026

@@ -15,7 +15,7 @@ use IO::AIO qw/ fadvise /;
 
 use constant TCP_CORK => ($^O eq "linux" ? 3 : 0); # XXX
 
-our $VERSION = '0.026';
+our $VERSION = '0.027';
 
 =head1 NAME
 
@@ -26,9 +26,9 @@ MogileFS:Client::Async
    my $mogfs = MogileFS::Client::Async->new( ... )
 
    $mogfs->read_to_file($key, $filename);
-   
+
    $mogfs->store_file($key, $class, $filename, \%opts );
-   
+
    $mogfs->store_content($key, $class, \$content, \%opts );
 
 =head1 DESCRIPTION
