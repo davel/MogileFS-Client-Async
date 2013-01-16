@@ -151,7 +151,7 @@ sub store_file_from_fh {
 
         my $fail_write_attempt = sub {
             my ($msg) = @_;
-            $last_error = $msg;
+            $last_error = $msg || "unknown error";
 
             if ($opts->{on_failure}) {
                 $opts->{on_failure}->({
