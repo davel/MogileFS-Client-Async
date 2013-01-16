@@ -1,3 +1,5 @@
+  - Don't repeetedly report checksum timeouts.
+
 0.026
   - Code clean ups.
   - Handle uploading large files on 32 bit machines.

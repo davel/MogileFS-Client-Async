@@ -322,10 +322,10 @@ sub store_file_from_fh {
                         $self->run_hook('store_file_end', $self, $key, $class, $opts);
                         return $eventual_length;
                     }
-                    elsif ($checksum && tv_interval($ts_sent_create_close) >= $self->{backend}->{timeout}) {
+                    elsif (!$create_close_timed_out && $checksum && tv_interval($ts_sent_create_close) >= $self->{backend}->{timeout}) {
                         @dests = ();
-                        $fail_write_attempt->("create_close failed, possibly timed out checksumming");
                         $create_close_timed_out = 1;
+                        $fail_write_attempt->("create_close failed, possibly timed out checksumming");
                     }
                     else {
                         # create_close may explode due to a back checksum,
