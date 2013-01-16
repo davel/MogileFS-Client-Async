@@ -338,7 +338,7 @@ sub store_file_from_fh {
                     }
                 }
                 else {
-                    $self->fail_write_attempt("Got non-200 from remote server $top");
+                    $fail_write_attempt->("Got non-200 from remote server $top");
                     next;
                 }
             }
