@@ -342,8 +342,7 @@ sub store_file_from_fh {
                     next;
                 }
             }
-
-            if ($last_written_point == $available_to_read) {
+            elsif ($last_written_point == $available_to_read) {
                 return;
             }
         }
