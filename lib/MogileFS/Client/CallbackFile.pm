@@ -30,17 +30,23 @@ MogileFS::Client::CallbackFile
     my $eventual_length = -s $read_fh;
     my $f = $mogfs->store_file_from_fh($key, $class, $read_fh, $eventual_length, \%opts);
 
-    $f->($eventual_length, 0);
+    $f->($eventual_length, 0); # upload entire file
 
-    $f->("", 1); # indicate EOF
+    $f->($eventual_length, 1); # indicate EOF
 
 =head1 DESCRIPTION
 
 This package inherits from L<MogileFS::Client::Async> and provides an additional
 blocking API in which the data you wish to upload is read from a file when
-commanded by a callback function.
-function, allowing other processing to take place on data as you read it from
-disc or elsewhere.
+commanded by a callback function.  This allows other processing to take place on
+data as you read it from disc or elsewhere.
+
+The trackers, and storage backends, are tried repeatedly until the file is
+successfully stored, or an error is thrown.
+
+The C<$key> parameter may be a closure.  In this case, it is called every time
+before C<create_open> is called, allowing a different key to be used if an
+upload fails, allowing for additional paranoia.
 
 =head1 SEE ALSO
 
