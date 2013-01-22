@@ -1,3 +1,5 @@
+  - Add a replacement implementation for store_file.
+
 0.027
   - Add more documentation.
   - Handle HTTP failures better.

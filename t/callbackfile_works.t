@@ -151,6 +151,22 @@ ok $mogc, 'Have client';
     };
 }
 
+{
+    my $key = "test-store-file";
+    my $exp_len = $mogc->store_file($key, "rip", $0);
+    diag "length is $exp_len";
+    is($exp_len, -s $0);
+
+    lives_ok {
+        my ($fh, $fn) = tempfile;
+        $mogc->read_to_file($key, $fn);
+        is( -s $fn, $exp_len, 'Read file back with correct length' )
+            or system("diff -u $0 $fn");
+        is sha1($fn), $exp_sha, 'Read file back with correct SHA1';
+        unlink $fn;
+    };
+
+}
 
 done_testing;
 
