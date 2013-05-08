@@ -232,6 +232,7 @@ sub store_file {
         $reset_timer->('start PUT');
         $cv->recv;
         setsockopt($socket_fh, IPPROTO_TCP, TCP_CORK, 0) or warn "could not unset TCP_CORK" if TCP_CORK;
+        shutdown($socket_fh, 1) or warn "could not shutdown our socket: $!";
         $cv = AnyEvent->condvar;
         # FIXME - Cheat here, the response should be small, so we assume it'll allways all be
         #         readable at once, THIS MAY NOT BE TRUE!!!
