@@ -1,4 +1,5 @@
   - Shutdown writes on our socket as soon as we're done.
+  - Pass through the checksum calculated in store_file.
 
 0.028
   - Add a replacement implementation for store_file.
