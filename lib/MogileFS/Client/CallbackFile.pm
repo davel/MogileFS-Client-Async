@@ -248,7 +248,7 @@ sub store_file_from_fh {
                     next;
                 }
 
-                setsockopt($socket, IPPROTO_TCP, TCP_CORK, 0) or warn "could not unset TCP_CORK" if TCP_CORK;
+                setsockopt($socket, IPPROTO_TCP, TCP_CORK, 0) or warn "could not unset TCP_CORK: $!" if TCP_CORK;
                 unless(close($socket)) {
                     $fail_write_attempt->($!);
                     warn "could not close socket: $!";
