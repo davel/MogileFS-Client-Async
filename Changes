@@ -1,3 +1,5 @@
+  - Shutdown writes on our socket as soon as we're done.
+
 0.028
   - Add a replacement implementation for store_file.
 
