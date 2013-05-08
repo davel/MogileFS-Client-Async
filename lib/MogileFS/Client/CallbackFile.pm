@@ -375,7 +375,7 @@ sub store_file {
 
     $checksum =~ /^([0-9a-f]{32})/ or die "could not find checksum";
 
-    $cb->($file_length, 1);
+    $cb->($file_length, 1, $1);
 
     return $file_length;
 }
