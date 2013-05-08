@@ -231,6 +231,7 @@ sub store_file_from_fh {
 
             if ($socket && $eof) {
                 setsockopt($socket, IPPROTO_TCP, TCP_CORK, 0) or warn "could not unset TCP_CORK: $!" if TCP_CORK;
+                shutdown($socket, 1) or warn "could not shutdown socket: $!";
                 die "File is longer than initially declared, is it still being written to? We are at $last_written_point, $eventual_length initially declared" if ($last_written_point > $eventual_length);
                 die "Cannot be at eof, only $last_written_point out of $eventual_length written!" unless ($last_written_point == $eventual_length);
 
