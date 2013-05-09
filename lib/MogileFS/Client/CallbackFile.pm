@@ -355,7 +355,7 @@ sub store_file_from_fh {
 sub store_file {
     my ($self, $key, $class, $fn, $opts) = @_;
 
-    if (ref($fn) ne 'SCALAR') {
+    if (ref($fn)) {
         warn "not scalar!";
         return $self->SUPER::store_file($key, $class, $fn, $opts);
     }
