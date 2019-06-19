@@ -15,7 +15,7 @@ use IO::AIO qw/ fadvise /;
 
 use constant TCP_CORK => ($^O eq "linux" ? 3 : 0); # XXX
 
-our $VERSION = '0.030';
+our $VERSION = '0.031';
 
 # ABSTRACT: A non-blocking MogileFS client
 
