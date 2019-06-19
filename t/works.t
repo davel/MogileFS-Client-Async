@@ -3,6 +3,7 @@ use warnings;
 use Test::More;
 use Test::Exception;
 use MogileFS::Client::Async;
+use MogileFS::Admin;
 use Digest::SHA1;
 use File::Temp qw/ tempfile /;
 
