@@ -5,9 +5,4 @@ perl:
   - "5.30"
 sudo: false
 before_install:
-  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
-  - source ~/travis-perl-helpers/init
-install:
-  - cpan-install --deps
-script:
-  - prove -l -j$(test-jobs) $(test-files)
+  - eval $(curl https://travis-perl.github.io/init) --auto
