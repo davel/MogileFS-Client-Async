@@ -17,6 +17,8 @@ use constant TCP_CORK => ($^O eq "linux" ? 3 : 0); # XXX
 
 our $VERSION = '0.030';
 
+# ABSTRACT: A non-blocking MogileFS client
+
 =head1 NAME
 
 MogileFS:Client::Async
